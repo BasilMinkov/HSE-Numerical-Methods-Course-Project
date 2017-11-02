@@ -1,3 +1,3 @@
 # NumericalMethodsProject
 
-![alt text](https://raw.githubusercontent.com/BasilMinkov/NumericalMethodsProject/master/static/NumericalMethodsProjects.png)
+![alt text](https://github.com/BasilMinkov/NumericalMethodsProject/blob/master/static/NumericalMethodsProjects.jpg)
