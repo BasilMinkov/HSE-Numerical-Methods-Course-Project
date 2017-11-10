@@ -1,5 +1,9 @@
 # Numerical Methods Project [:ru:](/info/README_RUS.md)
 
+## Flowchart
+
+![alt text](https://github.com/BasilMinkov/NumericalMethodsProject/blob/master/static/NumericalMethodsProjects_eng.jpg)
+
 ## [class _ApplicationWindow_](/main.py)
 Displays one of the five operating modes. Passes and updates function parameters. Made with [_PyQt5_](https://pypi.python.org/pypi/PyQt5).
 

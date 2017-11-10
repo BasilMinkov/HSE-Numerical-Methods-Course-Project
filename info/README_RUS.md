@@ -1,36 +1,42 @@
 # Численые Методы: Русская Документация
 
+Программа предлагает пользователю динамическую настройку параметроввсоциально-демографическом рекламном сервере.
+Предлагается исследоватьзависимость зависимость количества показов рекламыи и точности попадания в целевую аудиторию от
+алгоритма показа рекламы на рекламном сервере (крутилке), чтобы по результатам исследования построить оптимальный алгоритм.
+
+## Блок-схема работы программы
+
 ![alt text](https://github.com/BasilMinkov/NumericalMethodsProject/blob/master/static/NumericalMethodsProjects.jpg)
 
-### class _ApplicationWindow_
+## [class _ApplicationWindow_](/main.py)
 Отображает  один из пяти режимов работы программы. Реализовано на [_PyQt5_](https://pypi.python.org/pypi/PyQt5). Передает и изменяет функций параметры.
 
-#### Integration
+### Integration
 Режим, в котором реализовано нахождение приближенного значения интеграла и интерполяция.
 
-#### Functions
+### Functions
 Режим, в котором реализовано изображение основных функций _ρ(ω)_, _x(t)_.
 
-#### SNR
+### SNR
 Режим, в котором реализовано изображение функций _x(t)_, _S(t)_, _x(t)-S(t)_ на примере SNR (отношение сигнал-шум).
 
-#### Cauchy Problem
+### Cauchy Problem
 Режим, в котором реализовано численное решение задачи Коши.
 
-#### Contour Line
+### Contour Line
 Режим, в котором реализовано изображение линий уровня.
 
-### class _MyMplCanvas_
+## [class _MyMplCanvas_](/canvas.py)
 Класс, который реализует изображение графиков с помощью пакета [_matplotlib_](https://matplotlib.org/).
 
-### class Params
+## [class _Params_](/params.py)
 Экземпляры  класса – данные о интерполяционных сектах и коэффиценты функций.
 
-### class NumericalMethods
+## [class _NumericalMethods_](/numerical_methods.py)
 Класс, в котором реализованы численные методы с помощью пакетов [_scipy_](https://www.scipy.org/) и [_numpy_](http://www.numpy.org/).
 
-### class CauchyProblem
+### [class _CauchyProblem_](/numerical_methods.py)
 Класс, в котором реализовано решение [задачи Коши] (https://en.wikipedia.org/wiki/Cauchy_problem).
 
-### class NumericalIntegration
+### [class _NumericalIntegration_]((/numerical_methods.py))
 Класс, в которм реализовано численное интегрирование и нахождение приближенного значения интеграла.
