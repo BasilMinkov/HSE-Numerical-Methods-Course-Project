@@ -31,6 +31,10 @@ Class instances – discrete set and function parameters.
 ## [class _NumericalMethods_](/numerical_methods.py)
 Numerical methods implementation with [_scipy_](https://www.scipy.org/) и [_numpy_](http://www.numpy.org/).
 
+### Trapezoidal rule
+
+$s(t) = \mathcal{A}\/\sin(2 \omega t)$
+
 ### [class _CauchyProblem_](/numerical_methods.py)
 [The Cauchy problem](https://en.wikipedia.org/wiki/Cauchy_problem) implementation. Inherited from **class _NumericalMethods_**.
 

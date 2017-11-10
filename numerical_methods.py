@@ -22,9 +22,26 @@ class NumericalIntegration(NumericalMethods):
         self.x = x
         self.y = y
 
-    def calculate_integral(self):
+    def trapezium_method(self, func, mim_lim, max_lim, delta):
+        def integrate(func, mim_lim, max_lim, n):
+            integral = 0.0
+            step = (max_lim - mim_lim) / n
+            for x in np.arange(mim_lim, max_lim - step, step):
+                integral += step * (func(x) + func(x + step)) / 2
+            return integral
+
+        d, n = 1, 1
+        while np.absolute(d) > delta:
+            d = (integrate(func, mim_lim, max_lim, n * 2) - integrate(func, mim_lim, max_lim, n)) / 3
+            n *= 2
+
+        print('Rect')
+        print(' '.join(['\t',
+                        str(n),
+                        str(np.absolute(integrate(func, mim_lim, max_lim, n))),
+                        str(np.absolute(integrate(func, mim_lim, max_lim, n)) + d)]))
+
         print('The integral has been calculated.')
-        return random.random()
 
     def interpolate(self):
         self.coefs_ = np.array([random.random() for i in range(len(self.x)+1)])
