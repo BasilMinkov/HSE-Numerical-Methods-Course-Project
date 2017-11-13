@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import numpy as np
+import scipy.integrate
 import sys
 import random
 from PyQt5 import QtGui, QtCore, QtWidgets
