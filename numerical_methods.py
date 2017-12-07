@@ -96,20 +96,35 @@ class NumericalIntegration(NumericalMethods):
 
 class CubicSplineInterpolation(NumericalMethods):
 
-    def __init__(self):
+    def __init__(self, form):
         NumericalMethods.__init__(self)
-        self.k = np.array([])
-        self.a = np.array([])
-        self.b = np.array([])
-        self.xc = np.array([])
-        self.yc = np.array([])
 
-    def fit(self, y, x, size_check=False):
+        if form == 'usual':
+            # usual from params
+            self.a = np.array([])
+            self.b = np.array([])
+            self.c = np.array([])
+            self.d = np.array([])
+            self.form = form
+        elif form == 'symmetric':
+            # symmetric from params
+            self.k = np.array([])
+            self.a = np.array([])
+            self.b = np.array([])
+            self.xc = np.array([])
+            self.yc = np.array([])
+            self.form = form
+        else:
+            raise ValueError("Form should be either 'usual' or 'symmetric'.")
+
+    def fit(self, y=None, x=None, size_check=False):
         """
         fit(self, y, x)
         
         Fits the data and gets the interpolation coefficients. 
-        
+
+        :param size_check:
+        :param form:
         :param y: function values array
         :param x: argument values array.
         :return: 
@@ -124,21 +139,46 @@ class CubicSplineInterpolation(NumericalMethods):
         elif len(x) != len(y):
             raise ValueError("Both argument value array and function value array should be of equal length.")
 
-        ac = np.array([(1/(x[i+1]-x[i])) for i in range(0, len(x)-1)])  # first and third diagonals
-        b = np.array([2/(x[1]-x[0])] + [2 * ((1/(x[i]-x[i-1]))+(1/(x[i+1]-x[i]))) for i in range(1, len(x)-1)] + [2/(x[-1]-x[-2])])  # main diagonal
-        d = np.array([3*((y[1]-y[0])/((x[1]-x[0])**2))] +
-                     [3*(((y[i+1]-y[i])/((x[i+1]-x[i])**2)) +
-                     ((y[i+2]-y[i+1])/((x[i+2]-x[i+1])**2))) for i in range(len(x)-2)] +
-                     [3 * ((y[-1] - y[-2]) / ((x[-1] - x[-2]) ** 2))])  # array of d coefficients
+        try:
+            if self.form == 'usual':
+                h = np.array([x[i]-x[i-1] for i in range(1, len(x))])
+                ac = np.array([x[i]-x[i-1] for i in range(1, len(x)-1)])
+                b = np.array([2*(x[i+2]-x[i]) for i in range(len(x)-2)])
+                d = np.array([6*(((y[i+2]-y[i+1])/(x[i+2]-x[i+1]))-((y[i+1]-y[i])/(x[i+1]-x[i])))
+                              for i in range(len(x)-2)])
 
-        self.k = tridiagonal_matrix_algorithm(ac, b, ac, d)
-        self.a = [(self.k[i]*(x[i+1]-x[i])-(y[i+1]-y[i])) for i in range(len(self.k)-1)]
-        self.b = [(-self.k[i+1]*(x[i+1]-x[i])+(y[i+1]-y[i])) for i in range(len(self.k)-1)]
+                self.a = h
+                self.c = tridiagonal_matrix_algorithm(ac, b, ac, d)
+                self.d = [(self.c[i]-self.c[i-1])/(x[i]-x[i-1]) for i in range(1, len(self.c))]
+                self.b = [
+                    (0.5*(x[i+1]-x[i])*self.c[i+1])-(1/6)*(((x[i+1]-x[i])**2)*self.c[i+1])+((y[i+1]-y[i])/(x[i+1]-x[i]))
+                    for i in range(len(self.c)-1)
+                ]
 
-        if size_check:
-            for i in [self.k, self.x, self.y, self.a, self.b, ac, b, d]:
-                print("k x y a b ac b d")
-                print(len(i), end=' ')
+            elif self.form == 'symmetric':
+                ac = np.array([(1/(x[i+1]-x[i])) for i in range(0, len(x)-1)])  # first and third diagonals
+                b = np.array([2/(x[1]-x[0])] + [2 * ((1/(x[i]-x[i-1]))+(1/(x[i+1]-x[i]))) for i in range(1, len(x)-1)] +
+                             [2/(x[-1]-x[-2])])  # main diagonal
+                d = np.array([3*((y[1]-y[0])/((x[1]-x[0])**2))] +
+                             [3*(((y[i+1]-y[i])/((x[i+1]-x[i])**2)) +
+                             ((y[i+2]-y[i+1])/((x[i+2]-x[i+1])**2))) for i in range(len(x)-2)] +
+                             [3 * ((y[-1] - y[-2]) / ((x[-1] - x[-2]) ** 2))])  # array of d coefficients
+
+                self.k = tridiagonal_matrix_algorithm(ac, b, ac, d)
+                self.a = [(self.k[i]*(x[i+1]-x[i])-(y[i+1]-y[i])) for i in range(len(self.k)-1)]
+                self.b = [(-self.k[i+1]*(x[i+1]-x[i])+(y[i+1]-y[i])) for i in range(len(self.k)-1)]
+
+        finally:
+            if size_check:
+                if self.form == 'usual':
+                    for i in [h, ac, b, d, self.a, self.c, self.d, self.b]:
+                        print(len(i), end=' ')
+                    print("\n")
+                elif self.form == 'symmetric':
+                    print("k x y a b ac b d")
+                    for i in [self.k, self.x, self.y, self.a, self.b, ac, b, d]:
+                        print(len(i), end=' ')
+                    print("\n")
 
     def predict(self, h=0.01):
         """
@@ -154,27 +194,61 @@ class CubicSplineInterpolation(NumericalMethods):
         # for i in [self.k, self.x, self.y, self.a, self.b]:
         #     print(len(i), end=' ')
 
-        for i in range(1, len(self.x)):
-            xd = np.arange(self.x[i-1], self.x[i], h)
-            self.xc = np.append(self.xc, xd)
-            for j in xd:
-                t = (j - self.x[i-1])/(self.x[i] - self.x[i-1])
-                yd = ((1-t)*self.y[i-1])+(t*self.y[i])+(t*(1-t)*((self.a[i-1]*(1-t))+(self.b[i-1]*t)))
-                self.yc = np.append(self.yc, yd)
-        return self.yc, self.xc
+        if self.form == 'usual':
+            for i in range(2, len(self.x)-1):
+                xd = np.arange(self.x[i - 1], self.x[i], h)
+                self.xc = np.append(self.xc, xd)
+                for j in xd:
+                    yd = self.a[i] + self.b[i]*j + self.c[i]*(j**2) + self.d[i]*(j**3)
+                    self.yc = np.append(self.yc, yd)
+            return self.yc, self.xc
+
+        elif self.form == 'symmetric':
+            for i in range(1, len(self.x)):
+                xd = np.arange(self.x[i-1], self.x[i], h)
+                self.xc = np.append(self.xc, xd)
+                for j in xd:
+                    t = (j - self.x[i-1])/(self.x[i] - self.x[i-1])
+                    yd = ((1-t)*self.y[i-1])+(t*self.y[i])+(t*(1-t)*((self.a[i-1]*(1-t))+(self.b[i-1]*t)))
+                    self.yc = np.append(self.yc, yd)
+            return self.yc, self.xc
 
 
-class CauchyProblem(NumericalMethods):
-    def __init__(self, x0=None, y0=None, beta=None, T=None):
+class EulerMethod(NumericalMethods):
+    def __init__(self, y=None, x=None, coefs=None, x0=0, y0=None, xf=10, n=100):
         NumericalMethods.__init__(self)
+        # differential equation parameters
         self.x0 = x0
+        self.xf = xf
         self.y0 = y0
-        self.beta = beta
-        self.T = T
-        self.U = np.array([])
-        self.S = np.array([])
-        self.z = np.array([])
+        self.n = n
 
-    def solve_differential_equation(self):
-        print('The differential equation has been calculated.')
-        return random.random()
+        self.d = (self.xf - self.x0)/(self.n - 1)
+        self.x = np.linspace(self.x0, self.xf, self.self.n)
+        self.y = np.zeros([self.n])  # how does it work?
+
+        if coefs is None:
+            md = CubicSplineInterpolation()
+
+    def predict(self):
+        self.y[0] = self.y0
+        for i in range(1, self.n):
+            self.y[i] = self.d*()+self.y[i-1]
+
+
+if __name__ == "__main__":
+
+    import matplotlib.pyplot as plt
+
+    x = np.arange(1, 10, 1)
+    y = np.sin(x)
+
+    # h = np.array([x[i] - x[i - 1] for i in range(1, len(x))])
+
+    md = CubicSplineInterpolation(form='symmetric')
+    md.fit(y, x, size_check=True)
+    # yp, xp = md.predict()
+
+    # plt.plot(x, y)
+    # plt.plot(xp, yp)
+    # plt.show()
