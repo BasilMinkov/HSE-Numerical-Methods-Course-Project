@@ -1,5 +1,4 @@
-import random
-import scipy.interpolate
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -142,18 +141,21 @@ class CubicSplineInterpolation(NumericalMethods):
         try:
             if self.form == 'usual':
                 h = np.array([x[i]-x[i-1] for i in range(1, len(x))])
-                ac = np.array([x[i]-x[i-1] for i in range(1, len(x)-1)])
-                b = np.array([2*(x[i+2]-x[i]) for i in range(len(x)-2)])
+                ac = np.array([x[i]-x[i-1] for i in range(2, len(x)-2)])
+                b = np.array([2*(x[i+2]-x[i]) for i in range(len(x)-3)])
                 d = np.array([6*(((y[i+2]-y[i+1])/(x[i+2]-x[i+1]))-((y[i+1]-y[i])/(x[i+1]-x[i])))
-                              for i in range(len(x)-2)])
+                              for i in range(len(x)-3)])
 
-                self.a = h
-                self.c = tridiagonal_matrix_algorithm(ac, b, ac, d)
+                self.a = y[1:]
+
+                self.c = np.append(tridiagonal_matrix_algorithm(ac, b, ac, d), 0)
+                self.c = np.append(0, self.c)
                 self.d = [(self.c[i]-self.c[i-1])/(x[i]-x[i-1]) for i in range(1, len(self.c))]
                 self.b = [
                     (0.5*(x[i+1]-x[i])*self.c[i+1])-(1/6)*(((x[i+1]-x[i])**2)*self.c[i+1])+((y[i+1]-y[i])/(x[i+1]-x[i]))
-                    for i in range(len(self.c)-1)
+                    for i in range(len(x)-1)
                 ]
+                self.c = self.c[:-1]
 
             elif self.form == 'symmetric':
                 ac = np.array([(1/(x[i+1]-x[i])) for i in range(0, len(x)-1)])  # first and third diagonals
@@ -171,6 +173,7 @@ class CubicSplineInterpolation(NumericalMethods):
         finally:
             if size_check:
                 if self.form == 'usual':
+                    print('h ac b d a c d b')
                     for i in [h, ac, b, d, self.a, self.c, self.d, self.b]:
                         print(len(i), end=' ')
                     print("\n")
@@ -195,11 +198,11 @@ class CubicSplineInterpolation(NumericalMethods):
         #     print(len(i), end=' ')
 
         if self.form == 'usual':
-            for i in range(2, len(self.x)-1):
+            for i in range(1, len(self.x)-1):
                 xd = np.arange(self.x[i - 1], self.x[i], h)
                 self.xc = np.append(self.xc, xd)
                 for j in xd:
-                    yd = self.a[i] + self.b[i]*j + self.c[i]*(j**2) + self.d[i]*(j**3)
+                    yd = self.a[i] + self.b[i]*(j-x[i]) + self.c[i]*((j-x[i])**2) + self.d[i]*((j-x[i])**3)
                     self.yc = np.append(self.yc, yd)
             return self.yc, self.xc
 
@@ -215,40 +218,68 @@ class CubicSplineInterpolation(NumericalMethods):
 
 
 class EulerMethod(NumericalMethods):
-    def __init__(self, y=None, x=None, coefs=None, x0=0, y0=None, xf=10, n=100):
+    def __init__(self, foo=lambda x: x):
         NumericalMethods.__init__(self)
         # differential equation parameters
+        self.x0 = 0  #
+        self.xf = 0
+        self.y0 = 0
+        self.foo = 0
+
+        self.n = 0
+        self.d = 0  # delta or step
+
+        self.x = 0  # x array for prediction
+        self.y = 0  # y array for prediction
+
+    def fit(self, x0=0, y0=None, xf=10, n=100, d=None):
         self.x0 = x0
         self.xf = xf
         self.y0 = y0
-        self.n = n
 
-        self.d = (self.xf - self.x0)/(self.n - 1)
-        self.x = np.linspace(self.x0, self.xf, self.self.n)
+        if n is None and d is None:
+            raise ValueError("Either 'n' or 'd' argument should not be 'None'")
+        elif n is not None and d is not None:
+            raise ValueError("Either 'n' or 'd' argument should be 'None'")
+
+        if d is None:
+            self.n = n
+            self.d = (self.xf - self.x0) / (self.n - 1)
+            self.x = np.linspace(self.x0, self.xf, self.self.n)
+        else:
+            self.d = d
+            self.x = np.arange(self.x0, self.xf, self.self.d)
+            self.n = self.x.shape[0]
+
         self.y = np.zeros([self.n])  # how does it work?
 
-        if coefs is None:
-            md = CubicSplineInterpolation()
+    def predict(self, plot=False):
 
-    def predict(self):
         self.y[0] = self.y0
         for i in range(1, self.n):
-            self.y[i] = self.d*()+self.y[i-1]
+            self.y[i] = self.d*(self.foo(x[i-1], y[i-1]))+self.y[i-1]
+
+        for i in range(self.n):
+            print(self.x[i], self.y[i])
+
+        if plot:
+            plt.plot(x, y, "o")
+            plt.xlabel(r"$x$")
+            plt.ylabel(r"$y$")
+            plt.show()
 
 
 if __name__ == "__main__":
 
-    import matplotlib.pyplot as plt
-
     x = np.arange(1, 10, 1)
     y = np.sin(x)
 
-    # h = np.array([x[i] - x[i - 1] for i in range(1, len(x))])
+    def my_foo(x, y):
+        return y**2-x
 
-    md = CubicSplineInterpolation(form='symmetric')
-    md.fit(y, x, size_check=True)
-    # yp, xp = md.predict()
+    md = EulerMethod(foo=my_foo)
+    yp, xp = md.predict()
 
-    # plt.plot(x, y)
-    # plt.plot(xp, yp)
-    # plt.show()
+    plt.plot(x, y)
+    plt.plot(xp, yp)
+    plt.show()
