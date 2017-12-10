@@ -218,24 +218,34 @@ class CubicSplineInterpolation(NumericalMethods):
 
 
 class EulerMethod(NumericalMethods):
-    def __init__(self, foo=lambda x: x):
+    def __init__(self, foo, foo1=None, order=1, n_eq=1):
         NumericalMethods.__init__(self)
         # differential equation parameters
+        self.order = order
         self.x0 = 0  #
         self.xf = 0
         self.y0 = 0
-        self.foo = 0
+        self.dy0 = 0
+        self.y01 = 0
+
+        self.n_eq = n_eq
+        self.foo = foo
+        self.foo1 = foo1
 
         self.n = 0
         self.d = 0  # delta or step
 
-        self.x = 0  # x array for prediction
-        self.y = 0  # y array for prediction
+        self.x = np.array([])  # x array for prediction
+        self.y = np.array([])  # y array for prediction
+        self.dy = np.array([])
+        self.y1 = np.array([])
 
-    def fit(self, x0=0, y0=None, xf=10, n=100, d=None):
+    def fit(self, x0=0, y0=None, ey0=None, xf=10, n=100, d=None):
         self.x0 = x0
         self.xf = xf
         self.y0 = y0
+        self.dy0 = ey0  # extra param
+        self.y01 = ey0  # extra param
 
         if n is None and d is None:
             raise ValueError("Either 'n' or 'd' argument should not be 'None'")
@@ -245,41 +255,89 @@ class EulerMethod(NumericalMethods):
         if d is None:
             self.n = n
             self.d = (self.xf - self.x0) / (self.n - 1)
-            self.x = np.linspace(self.x0, self.xf, self.self.n)
+            self.x = np.linspace(self.x0, self.xf, self.n)
         else:
             self.d = d
-            self.x = np.arange(self.x0, self.xf, self.self.d)
+            self.x = np.arange(self.x0, self.xf, self.d)
             self.n = self.x.shape[0]
 
         self.y = np.zeros([self.n])  # how does it work?
+        self.dy = np.zeros([self.n])
+        self.y1 = np.zeros([self.n])
 
-    def predict(self, plot=False):
+    def predict(self, prnt=False, plot=False):
 
-        self.y[0] = self.y0
-        for i in range(1, self.n):
-            self.y[i] = self.d*(self.foo(x[i-1], y[i-1]))+self.y[i-1]
+        if self.n_eq == 2 and self.order == 1:
+            self.y[0] = self.y0
+            self.y1[0] = self.y01
+            for i in range(1, self.n):
+                self.y[i] = self.d * (self.foo(self.x[i - 1], self.y[i - 1], self.y1[i - 1])) + self.y[i - 1]
+                self.y1[i] = self.d * (self.foo1(self.x[i - 1], self.y[i - 1], self.y1[i - 1])) + self.y1[i - 1]
+            if prnt:
+                for i in range(self.n):
+                    print(self.x[i], self.y[i], self.y1[i])
+            if plot:
+                plt.plot(self.x, self.y, "o", label=r"$y_1$")
+                plt.plot(self.x, self.y1, "o", label=r"$y_2$")
+                plt.xlabel(r"$x$")
+                plt.xlabel(r"$x$")
+                plt.ylabel(r"$y$")
+                plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+                plt.show()
+            return self.y, self.y1, self.x
 
-        for i in range(self.n):
-            print(self.x[i], self.y[i])
+        if self.order == 1 and self.n_eq == 1:
+            self.y[0] = self.y0
+            for i in range(1, self.n):
+                self.y[i] = self.d*(self.foo(self.x[i-1], self.y[i-1]))+self.y[i-1]
+            if prnt:
+                for i in range(self.n):
+                    print(self.x[i], self.y[i])
+            if plot:
+                plt.plot(self.x, self.y, "o")
+                plt.xlabel(r"$x$", label=r"$y$")
+                plt.ylabel(r"$y$")
+                plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+                plt.show()
+            return self.y, self.x
 
-        if plot:
-            plt.plot(x, y, "o")
-            plt.xlabel(r"$x$")
-            plt.ylabel(r"$y$")
-            plt.show()
+        if self.order == 2:
+            self.y[0] = self.y0
+            self.dy[0] = self.dy0
+            for i in range(1, self.n):
+                self.y[i] = self.d * self.dy[i - 1] + self.y[i - 1]
+                self.dy[i] = self.d * (self.foo(self.x[i - 1], self.y[i - 1], self.dy[i - 1])) + self.dy[i - 1]
+            if prnt:
+                for i in range(self.n):
+                    print(self.x[i], self.y[i], self.dy[i])
+            if plot:
+                plt.plot(self.x, self.y, "o", label=r"$y$")
+                plt.plot(self.x, self.dy, "o", label=r"$y'$")
+                plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+                plt.xlabel(r"$x$")
+                plt.ylabel(r"$y$")
+                plt.show()
+
+            return self.y, self.dy, self.x
 
 
 if __name__ == "__main__":
 
-    x = np.arange(1, 10, 1)
-    y = np.sin(x)
+    def diff_foo(x, y, dy):
+        return 6 * dy - 9 * y + pow(np.e, 3 * x)
 
-    def my_foo(x, y):
-        return y**2-x
+    def analytic_foo(x):
+        return x * pow(np.e, 3 * x) + 0.5 * pow(x, 2) * pow(np.e, 3 * x)
 
-    md = EulerMethod(foo=my_foo)
-    yp, xp = md.predict()
+    md = EulerMethod(foo=diff_foo)
 
-    plt.plot(x, y)
-    plt.plot(xp, yp)
+    x = np.arange(0, 1, 0.01)
+    y = analytic_foo(x)
+    md.fit(x0=0, y0=0, dy0=1, xf=1, n=None, d=0.001)
+    yp, dyp, xp = md.predict()
+
+    plt.plot(x, y, label='analytic')
+    plt.plot(xp, yp, label=r'$y$')
+    plt.plot(xp, dyp, label=r'$dy$')
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     plt.show()
