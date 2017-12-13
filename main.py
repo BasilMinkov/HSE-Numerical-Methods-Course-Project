@@ -29,11 +29,12 @@ figure_params = Params(xgraph1=np.arange(0.0, np.pi * 12, np.pi / 12),
 
 class ApplicationWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, parent=None):
 
         # main window settings
 
-        QtWidgets.QMainWindow.__init__(self)
+        # QtWidgets.QMainWindow.__init__(self)
+        super(ApplicationWindow, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle("application main window")
         self.setWindowIcon(QtGui.QIcon("/Users/basilminkov/PycharmProjects/NumericalMethodsProjects/static/gr.png"))
@@ -333,7 +334,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         """"""
 
-        de = CauchyProblem()
+        de = EulerMethod()
         try:
             if self.le_x0.text() != '':
                 de.x0 = float(self.le_x0.text())

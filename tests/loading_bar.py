@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt5.QtWidgets import (QWidget, QProgressBar,
-    QPushButton, QApplication)
+from PyQt5.QtWidgets import (QWidget, QProgressBar, QPushButton, QApplication)
 from PyQt5.QtCore import QBasicTimer
 
 
@@ -31,7 +30,6 @@ class Example(QWidget):
         self.setWindowTitle('QProgressBar')
         self.show()
 
-
     def timerEvent(self, e):
 
         if self.step >= 100:
@@ -41,7 +39,6 @@ class Example(QWidget):
 
         self.step = self.step + 1
         self.pbar.setValue(self.step)
-
 
     def doAction(self):
 
