@@ -1,11 +1,9 @@
 from __future__ import unicode_literals
 import numpy as np
-import scipy.integrate
 import sys
-import random
 from PyQt5 import QtGui, QtCore, QtWidgets
 from canvas import *
-from numerical_methods import *
+from numerical_methods.numerical_methods import NumericalIntegration, CubicSplineInterpolation, EulerMethod
 
 progname = "Numerical Methods Project"
 progversion = "0.1"
@@ -401,47 +399,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.file_quit()
 
+
 if __name__ == "__main__":
 
-    # qApp = QtWidgets.QApplication(sys.argv)
-    # aw = ApplicationWindow()
-    # aw.setWindowTitle("%s %s" % (progname, progversion))
-    # aw.show()
-    # sys.exit(qApp.exec_())
-
-    from numerical_methods import CubicSplineInterpolation, tridiagonal_matrix_algorithm
-    import matplotlib.pyplot as plt
-    import scipy.interpolate
-
-    x = np.arange(10)
-    y = np.sin(x)
-
-    # xs = np.arange(-0.5, 9.6, 0.1)
-    # plt.figure(figsize=(6.5, 4))
-    # plt.plot(x, y, 'o', label='data')
-    # plt.plot(xs, cs(xs), label="S")
-    # plt.plot(xs, cs(xs, 1), label="S'")
-    # plt.plot(xs, cs(xs, 2), label="S''")
-    # plt.plot(xs, cs(xs, 3), label="S'''")
-    # plt.xlim(-0.5, 9.5)
-    # plt.legend(loc='lower left', ncol=2)
-    # plt.show()
-
-    cs = scipy.interpolate.CubicSpline(x, y)
-    # xs = np.arange(-0.5, 9.6, 0.1)
-    # plt.plot(xs, cs(xs), label="S")
-    md = CubicSplineInterpolation()
-    md.fit(y, x)
-    yc, xc = md.predict()
-    plt.plot(x, y)
-    plt.plot(xc, yc)
-    plt.show()
-
-
-    # a = np.array([3., 1, 3])
-    # b = np.array([10., 10., 7., 4.])
-    # c = np.array([2., 4., 5.])
-    # d = np.array([3, 4, 5, 6.])
-
-    # print(tridiagonal_matrix_algorithm(a, b, c, d))
-
+    qApp = QtWidgets.QApplication(sys.argv)
+    aw = ApplicationWindow()
+    aw.setWindowTitle("%s %s" % (progname, progversion))
+    aw.show()
+    sys.exit(qApp.exec_())
