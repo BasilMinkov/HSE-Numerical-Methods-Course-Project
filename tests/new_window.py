@@ -12,23 +12,21 @@ def main():
     sys.exit(app.exec_())
 
 
-class Second(QtWidgets.QMainWindow):
+class LoadingBar(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
-        super(Second, self).__init__(parent)
-        self.initUI()
-
-    def initUI(self):
+        super(LoadingBar, self).__init__(parent)
 
         self.pbar = QtWidgets.QProgressBar(self)
         self.pbar.setGeometry(30, 40, 200, 25)
 
-        self.btn = QtWidgets.QPushButton('Start', self)
-        self.btn.move(40, 80)
-        self.btn.clicked.connect(self.doAction)
+        # self.btn = QtWidgets.QPushButton('Start', self)
+        # self.btn.move(40, 80)
+        # self.btn.clicked.connect(self.doAction)
 
         self.timer = QtCore.QBasicTimer()
         self.step = 0
+        self.timer.start(100, self)
 
         self.setGeometry(300, 300, 280, 170)
         self.setWindowTitle('QProgressBar')
@@ -38,20 +36,13 @@ class Second(QtWidgets.QMainWindow):
 
         if self.step >= 100:
             self.timer.stop()
-            self.btn.setText('Finished')
+            self.close()
             return
 
-        self.step = self.step + 1
         self.pbar.setValue(self.step)
 
-    def doAction(self):
-
-        if self.timer.isActive():
-            self.timer.stop()
-            self.btn.setText('Start')
-        else:
-            self.timer.start(100, self)
-            self.btn.setText('Stop')
+    def update_timer(self, step):
+        self.step = step
 
 
 class First(QtWidgets.QMainWindow):

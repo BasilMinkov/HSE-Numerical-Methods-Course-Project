@@ -1,8 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import quad, trapz
-from scipy.signal import square
-from numerical_methods import NumericalIntegration, CubicSplineInterpolation
-import matplotlib.pyplot as plt
+
+from threshold_dynamics.numerical_methods import NumericalIntegration, CubicSplineInterpolation
+
 fig_size = [8, 6]  # Sets figure size
 plt.rcParams["figure.figsize"] = fig_size
 

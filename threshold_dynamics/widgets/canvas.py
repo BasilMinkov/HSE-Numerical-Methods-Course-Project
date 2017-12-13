@@ -1,9 +1,9 @@
 import random
+import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtWidgets
-from params import *
-from main import figure_params
+from threshold_dynamics.setup import figure_params
 
 
 class MyMplCanvas(FigureCanvas):

@@ -1,44 +1,28 @@
 from __future__ import unicode_literals
-import numpy as np
-import sys
-from PyQt5 import QtGui, QtCore, QtWidgets
-from canvas import *
-from numerical_methods.numerical_methods import NumericalIntegration, CubicSplineInterpolation, EulerMethod
 
-progname = "Numerical Methods Project"
-progversion = "0.1"
-proginfo = """
-Минков Василий Андреевич, БПС-143.
- ОС: Mac OS X El Capistan.
- Среда: PyCharm 2016.2,
- Процессор: 2,4 GHz Intel Core i7
- Оперативная память: 8 GB 1600 MHz DDR3
- Видеокарта: Intel HD Graphics 4000 1536 MB
- Разрешение экрана: 2880 x 1800
-"""
+from PyQt5 import QtGui
 
-figure_params = Params(xgraph1=np.arange(0.0, np.pi * 12, np.pi / 12),
-                       xgraph2=np.arange(0.0, 30, 0.1),
-                       xgraph3=np.arange(0.0, 30, 0.1),
-                       xgraph4=np.arange(0.0, 30, 0.1),
-                       xgraph5=np.arange(0.0, 30, 0.1),
-                       a1=0, b1=0,
-                       a2=1, b2=1,
-                       a3=5, b3=1)
+from threshold_dynamics.numerical_methods.numerical_methods import (NumericalIntegration, EulerMethod)
+from threshold_dynamics.widgets.canvas import *
+from threshold_dynamics.widgets.loading_bar import LoadingBar
+from threshold_dynamics.setup import proginfo
 
 
-class ApplicationWindow(QtWidgets.QMainWindow):
+class MainApplicationWindow(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
+        super(MainApplicationWindow, self).__init__(parent)
 
-        # main window settings
+        # Init loading bar
+        self.loading = LoadingBar()
 
-        # QtWidgets.QMainWindow.__init__(self)
-        super(ApplicationWindow, self).__init__(parent)
+        # Set window properties
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setWindowTitle("application main window")
+        self.setWindowTitle("Main Application Window")
         self.setWindowIcon(QtGui.QIcon("/Users/basilminkov/PycharmProjects/NumericalMethodsProjects/static/gr.png"))
+        self.loading.step += 10
 
+        # Set menu
         self.file_menu = QtWidgets.QMenu('&File', self)
         self.file_menu.addAction('&Quit', self.file_quit,
                                  QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
@@ -47,9 +31,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.menuBar().addSeparator()
         self.menuBar().addMenu(self.help_menu)
         self.help_menu.addAction('&About', self.about)
+        self.loading.step += 10
 
-        # initialise all used widgets
-
+        # Initialise all used widgets
+        # 1. Layouts
         self.main_widget = QtWidgets.QWidget(self)
         self.main_layout = QtWidgets.QVBoxLayout(self.main_widget)
         self.buttons = QtWidgets.QHBoxLayout()
@@ -61,12 +46,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.de_layout = QtWidgets.QHBoxLayout()
         self.intgr_layout = QtWidgets.QHBoxLayout()
         self.de_params = QtWidgets.QHBoxLayout()
-
+        self.loading.step += 10
+        # 2. Canvases
         self.sc = MyStaticMplCanvas(width=5, height=4, dpi=100)
         self.dc = MyDynamicMplCanvas(width=5, height=4, dpi=100)
         self.mc = MyStaticMergedMplCanvas(width=5, height=4, dpi=100)
         self.dbc = MyStaticDoubleMplCanvas(width=5, height=4, dpi=100)
-
+        self.loading.step += 10
+        # 3. Button name
         self.itgr = QtWidgets.QPushButton("Calculate Integral")
         self.intrp = QtWidgets.QPushButton("Interpolate")
         self.sco = QtWidgets.QPushButton("Save Coefficients")
@@ -87,9 +74,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ss1 = QtWidgets.QPushButton("Save Discrete Set")
         self.ss2 = QtWidgets.QPushButton("Save Discrete Set")
         self.ss3 = QtWidgets.QPushButton("Save Discrete Set")
-
+        self.loading.step += 10
+        # 4. Labels And Line Edits (Inputs)
+        # 4.1. Differential Equations System
         self.iv = QtWidgets.QLabel('Answer:')
-
         self.x0 = QtWidgets.QLabel('x0')
         self.y0 = QtWidgets.QLabel('y0')
         self.beta = QtWidgets.QLabel('Beta')
@@ -98,45 +86,50 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.le_y0 = QtWidgets.QLineEdit()
         self.le_beta = QtWidgets.QLineEdit()
         self.le_T = QtWidgets.QLineEdit()
-
+        # 4.2.
         self.l_a = QtWidgets.QLabel('a')
         self.l_b = QtWidgets.QLabel('b')
         self.le_a = QtWidgets.QLineEdit()
         self.le_b = QtWidgets.QLineEdit()
-
+        # 4.3.
         self.l_a2 = QtWidgets.QLabel('a')
         self.l_b2 = QtWidgets.QLabel('b')
         self.le_a2 = QtWidgets.QLineEdit()
         self.le_b2 = QtWidgets.QLineEdit()
-
+        # 4.4.
         self.l_a3 = QtWidgets.QLabel('SNR')
         self.l_b3 = QtWidgets.QLabel('Alpha')
         self.le_a3 = QtWidgets.QLineEdit()
         self.le_b3 = QtWidgets.QLineEdit()
+        self.loading.step += 10
 
+        # Assemble widgets to lists
         self.win1obj = [self.l_a, self.le_a, self.l_b, self.le_b, self.sc, self.ac1, self.us1, self.ss1,
                         self.l_a2, self.le_a2, self.l_b2, self.le_b2, self.dc, self.ac2, self.us2, self.ss2]
         self.win2obj = [self.l_a3, self.le_a3, self.l_b3, self.le_b3, self.mc, self.ac3, self.us3, self.ss3]
         self.win3obj = [self.de, self.sder, self.x0, self.y0, self.beta, self.T, self.le_x0, self.le_y0, self.le_beta, self.le_T]
         self.win4obj = [self.dbc]
         self.win5obj = [self.iv, self.itgr, self.intrp, self.sco]
-
         self.win_obj_list = [self.win1obj, self.win2obj, self.win3obj, self.win4obj, self.win5obj]
+        self.loading.step += 10
 
-        # assemble all layouts
+        # Assemble all layouts
         self.assembling()
         # close all widgets
         for i in self.win_obj_list:
             for j in i:
                 j.close()
+        self.loading.step += 10
 
-        # show main window
+        # Show main window
         self.setCentralWidget(self.main_widget)
         self.resize(1200, 800)
         self.statusBar().showMessage("All hail matplotlib!", 2000)
         self.current_window = None
         self.discrete_set = None
+        self.loading.step += 10
 
+        # Set buttons functions
         self.itgr.clicked.connect(self.calculate_integral)
         self.intrp.clicked.connect(self.interpolate)
         self.de.clicked.connect(self.solve_differential_equation)
@@ -155,6 +148,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ss1.clicked.connect(lambda: self.save_discrete_set(0))
         self.ss2.clicked.connect(lambda: self.save_discrete_set(1))
         self.ss3.clicked.connect(lambda: self.save_discrete_set(2))
+        self.loading.step += 10
 
     def assembling(self):
 
@@ -399,12 +393,3 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         """"""
 
         self.file_quit()
-
-
-if __name__ == "__main__":
-
-    qApp = QtWidgets.QApplication(sys.argv)
-    aw = ApplicationWindow()
-    aw.setWindowTitle("%s %s" % (progname, progversion))
-    aw.show()
-    sys.exit(qApp.exec_())
