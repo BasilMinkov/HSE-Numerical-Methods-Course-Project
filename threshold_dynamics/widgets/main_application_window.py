@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from PyQt5 import QtGui
 
-from threshold_dynamics.numerical_methods.numerical_methods import (NumericalIntegration, EulerMethod)
+from threshold_dynamics.numerical_methods import (NumericalIntegration, CubicSplineInterpolation, EulerMethod)
 from threshold_dynamics.widgets.canvas import *
 from threshold_dynamics.widgets.loading_bar import LoadingBar
 from threshold_dynamics.setup import proginfo

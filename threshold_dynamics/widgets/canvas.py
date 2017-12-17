@@ -30,6 +30,30 @@ class MyMplCanvas(FigureCanvas):
         pass
 
 
+class MyMplCanvas(FigureCanvas):
+
+    """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        self.compute_initial_figure()
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        timer = QtCore.QTimer(self)
+        timer.timeout.connect(self.update_figure)
+        timer.start(1000)
+
+    def compute_initial_figure(self):
+        pass
+
+    def update_figure(self):
+        pass
+
+
 class MyStaticMplCanvas(MyMplCanvas):
 
     """Simple canvas with a sine plot."""
@@ -40,11 +64,10 @@ class MyStaticMplCanvas(MyMplCanvas):
     def compute_initial_figure(self):
 
         figure_params.ygraph1 = figure_params.a1 + np.sin(figure_params.b1 + figure_params.xgraph1)
-        self.axes.set_title(r"$\rho(\omega) = a + \sin(b + \omega)$")
-        self.axes.set_xlabel(r"$\omega$")
+        # distribution of the audience by the probability of falling into the target.
+        self.axes.set_title(r"Distribution of the audience by the probability of hitting the target.")
+        self.axes.set_xlabel(r"$\rho(\omega) = a + \sin(b + \omega)$")
         self.axes.set_ylabel(r"$\rho(\omega)$")
-        self.axes.set_xlim(0, 50)
-        self.axes.set_ylim(-1, 1)
         self.axes.plot(figure_params.xgraph1, figure_params.ygraph1, 'g')
 
     def update_figure(self):
