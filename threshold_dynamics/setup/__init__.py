@@ -1,3 +1,4 @@
+from scipy.stats import norm
 from threshold_dynamics.params import *
 
 progname = "Numerical Methods Project"
@@ -43,11 +44,12 @@ w – вероятность посетителя попасть в таргет
 – подбираемый параметр. 
 """
 
-figure_params = Params(xgraph1=np.arange(0.0, np.pi * 12, np.pi / 12),
-                       xgraph2=np.arange(0.0, 30, 0.1),
-                       xgraph3=np.arange(0.0, 30, 0.1),
-                       xgraph4=np.arange(0.0, 30, 0.1),
-                       xgraph5=np.arange(0.0, 30, 0.1),
-                       a1=0, b1=0,
-                       a2=1, b2=1,
+figure_params = Params(xgraph1=np.arange(0.0, 1.0, 0.01),
+                       xgraph2=np.arange(0.0, 1.0, 0.01),
+                       xgraph3=np.arange(0.0, 1.0, 0.01),
+                       xgraph4=np.arange(0.0, 1.0, 0.01),
+                       xgraph5=np.arange(0.0, 1.0, 0.01),
+                       foo=norm.pdf,
+                       a1=1, b1=1,
+                       a2=1, b2=10,
                        a3=5, b3=1)

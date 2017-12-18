@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from PyQt5 import QtGui
+from scipy.stats import norm, beta, lognorm, laplace
 
 from threshold_dynamics.numerical_methods import (NumericalIntegration, CubicSplineInterpolation, EulerMethod)
 from threshold_dynamics.widgets.canvas import *
@@ -48,10 +49,39 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.de_params = QtWidgets.QHBoxLayout()
         self.loading.step += 10
         # 2. Canvases
-        self.sc = MyStaticMplCanvas(width=5, height=4, dpi=100)
-        self.dc = MyDynamicMplCanvas(width=5, height=4, dpi=100)
-        self.mc = MyStaticMergedMplCanvas(width=5, height=4, dpi=100)
-        self.dbc = MyStaticDoubleMplCanvas(width=5, height=4, dpi=100)
+        self.set_figure_params()
+        self.sc = MyMplCanvas(
+            x=figure_params.xgraph1,
+            y=figure_params.ygraph1,
+            title=r"Distribution of the audience by the probability of hitting the target.",
+            xlabel=r'\omega',
+            ylabel=r"$\rho(\omega) = PDF(\omega)$",
+            pen="r",
+        )
+        self.dc = MyMplCanvas(
+            x=figure_params.xgraph2,
+            y=figure_params.ygraph2,
+            title=r"Actual Number Of Visits",
+            xlabel=r't',
+            ylabel=r"$x(t)=a\sin(bt)$",
+            pen="g",
+        )
+        self.mc = MyMplCanvas(
+            x=figure_params.xgraph3,
+            y=figure_params.ygraph3,
+            title=r"Distribution of the audience by the probability of hitting the target.",
+            xlabel=r'\omega',
+            ylabel=r"$\rho(\omega) = a + \sin(b + \omega)$",
+            pen="g",
+        )
+        self.dbc = MyMplCanvas(
+            x=figure_params.xgraph4,
+            y=figure_params.ygraph4,
+            title=r"Distribution of the audience by the probability of hitting the target.",
+            xlabel=r'\omega',
+            ylabel=r"$\rho(\omega) = a + \sin(b + \omega)$",
+            pen="g",
+        )
         self.loading.step += 10
         # 3. Button name
         self.itgr = QtWidgets.QPushButton("Calculate Integral")
@@ -60,8 +90,8 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.de = QtWidgets.QPushButton("Solve Differential Equation")
         self.sder = QtWidgets.QPushButton("Save Result")
         self.fo = QtWidgets.QPushButton("Get Discrete Set")
-        self.b1 = QtWidgets.QPushButton("Functions")
-        self.b2 = QtWidgets.QPushButton("SNR")
+        self.b1 = QtWidgets.QPushButton("Months Statistics")
+        self.b2 = QtWidgets.QPushButton("Alignment With The Plan")
         self.b3 = QtWidgets.QPushButton("Cauchy Problem")
         self.b4 = QtWidgets.QPushButton("Contour Line")
         self.b5 = QtWidgets.QPushButton("Integration")
@@ -351,6 +381,17 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         np.savetxt("/Users/minkov/PycharmProjects/NumericalMethodsProjects/results/CauchyProblemAnswer.csv",
                    [de.solve_differential_equation()])
         self.statusBar().showMessage("Differential equation has been calculated, bro!", 2000)
+
+    @staticmethod
+    def set_figure_params():
+        signal = figure_params.a2 * np.cos(figure_params.b2 * figure_params.xgraph2) + figure_params.a2
+        noise = [random.gauss(0, np.std(signal) / figure_params.a3) for i in
+                 range(len(figure_params.xgraph2))]
+
+        figure_params.ygraph1 = norm.pdf(figure_params.xgraph1)
+        figure_params.ygraph2 = signal + noise
+        figure_params.ygraph3 = figure_params.a3 * np.cos(figure_params.b3 * figure_params.xgraph3) + figure_params.a3
+        figure_params.ygraph4 = figure_params.xgraph4
 
     @staticmethod
     def close_win_obj(win_obj):
