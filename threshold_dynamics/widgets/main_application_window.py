@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import time
 from PyQt5 import QtGui
 from scipy.stats import norm, beta, lognorm, laplace
 
@@ -21,7 +22,6 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle("Main Application Window")
         self.setWindowIcon(QtGui.QIcon("/Users/basilminkov/PycharmProjects/NumericalMethodsProjects/static/gr.png"))
-        self.loading.step += 10
 
         # Set menu
         self.file_menu = QtWidgets.QMenu('&File', self)
@@ -32,7 +32,6 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.menuBar().addSeparator()
         self.menuBar().addMenu(self.help_menu)
         self.help_menu.addAction('&About', self.about)
-        self.loading.step += 10
 
         # Initialise all used widgets
         # 1. Layouts
@@ -47,9 +46,8 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.de_layout = QtWidgets.QHBoxLayout()
         self.intgr_layout = QtWidgets.QHBoxLayout()
         self.de_params = QtWidgets.QHBoxLayout()
-        self.loading.step += 10
         # 2. Canvases
-        self.set_figure_params()
+        figure_params.set_figure_params()
         self.sc = MyMplCanvas(
             x=figure_params.xgraph1,
             y=figure_params.ygraph1,
@@ -82,7 +80,6 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
             ylabel=r"$\rho(\omega) = a + \sin(b + \omega)$",
             pen="g",
         )
-        self.loading.step += 10
         # 3. Button name
         self.itgr = QtWidgets.QPushButton("Calculate Integral")
         self.intrp = QtWidgets.QPushButton("Interpolate")
@@ -95,6 +92,7 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.b3 = QtWidgets.QPushButton("Cauchy Problem")
         self.b4 = QtWidgets.QPushButton("Contour Line")
         self.b5 = QtWidgets.QPushButton("Integration")
+        self.distribution_settings = QtWidgets.QPushButton("Distribution Settings")
         self.ac1 = QtWidgets.QPushButton("Apply Changes")
         self.ac2 = QtWidgets.QPushButton("Apply Changes")
         self.ac3 = QtWidgets.QPushButton("Apply Changes")
@@ -104,7 +102,6 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.ss1 = QtWidgets.QPushButton("Save Discrete Set")
         self.ss2 = QtWidgets.QPushButton("Save Discrete Set")
         self.ss3 = QtWidgets.QPushButton("Save Discrete Set")
-        self.loading.step += 10
         # 4. Labels And Line Edits (Inputs)
         # 4.1. Differential Equations System
         self.iv = QtWidgets.QLabel('Answer:')
@@ -117,10 +114,10 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.le_beta = QtWidgets.QLineEdit()
         self.le_T = QtWidgets.QLineEdit()
         # 4.2.
-        self.l_a = QtWidgets.QLabel('a')
-        self.l_b = QtWidgets.QLabel('b')
-        self.le_a = QtWidgets.QLineEdit()
-        self.le_b = QtWidgets.QLineEdit()
+        # self.l_a = QtWidgets.QLabel('a')
+        # self.l_b = QtWidgets.QLabel('b')
+        # self.le_a = QtWidgets.QLineEdit()
+        # self.le_b = QtWidgets.QLineEdit()
         # 4.3.
         self.l_a2 = QtWidgets.QLabel('a')
         self.l_b2 = QtWidgets.QLabel('b')
@@ -131,17 +128,15 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.l_b3 = QtWidgets.QLabel('Alpha')
         self.le_a3 = QtWidgets.QLineEdit()
         self.le_b3 = QtWidgets.QLineEdit()
-        self.loading.step += 10
 
         # Assemble widgets to lists
-        self.win1obj = [self.l_a, self.le_a, self.l_b, self.le_b, self.sc, self.ac1, self.us1, self.ss1,
+        self.win1obj = [self.distribution_settings, self.sc, self.ac1, self.us1, self.ss1,
                         self.l_a2, self.le_a2, self.l_b2, self.le_b2, self.dc, self.ac2, self.us2, self.ss2]
         self.win2obj = [self.l_a3, self.le_a3, self.l_b3, self.le_b3, self.mc, self.ac3, self.us3, self.ss3]
         self.win3obj = [self.de, self.sder, self.x0, self.y0, self.beta, self.T, self.le_x0, self.le_y0, self.le_beta, self.le_T]
         self.win4obj = [self.dbc]
         self.win5obj = [self.iv, self.itgr, self.intrp, self.sco]
         self.win_obj_list = [self.win1obj, self.win2obj, self.win3obj, self.win4obj, self.win5obj]
-        self.loading.step += 10
 
         # Assemble all layouts
         self.assembling()
@@ -149,7 +144,6 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         for i in self.win_obj_list:
             for j in i:
                 j.close()
-        self.loading.step += 10
 
         # Show main window
         self.setCentralWidget(self.main_widget)
@@ -157,7 +151,6 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.statusBar().showMessage("All hail matplotlib!", 2000)
         self.current_window = None
         self.discrete_set = None
-        self.loading.step += 10
 
         # Set buttons functions
         self.itgr.clicked.connect(self.calculate_integral)
@@ -178,7 +171,6 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
         self.ss1.clicked.connect(lambda: self.save_discrete_set(0))
         self.ss2.clicked.connect(lambda: self.save_discrete_set(1))
         self.ss3.clicked.connect(lambda: self.save_discrete_set(2))
-        self.loading.step += 10
 
     def assembling(self):
 
@@ -224,10 +216,7 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
 
         # functions regime << first graph params widgets
         self.params1.addStretch()
-        self.params1.addWidget(self.l_a)
-        self.params1.addWidget(self.le_a)
-        self.params1.addWidget(self.l_b)
-        self.params1.addWidget(self.le_b)
+        self.params1.addWidget(self.distribution_settings)
         self.params1.addWidget(self.ac1)
         self.params1.addWidget(self.us1)
         self.params1.addWidget(self.ss1)
@@ -382,16 +371,23 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
                    [de.solve_differential_equation()])
         self.statusBar().showMessage("Differential equation has been calculated, bro!", 2000)
 
-    @staticmethod
-    def set_figure_params():
-        signal = figure_params.a2 * np.cos(figure_params.b2 * figure_params.xgraph2) + figure_params.a2
-        noise = [random.gauss(0, np.std(signal) / figure_params.a3) for i in
-                 range(len(figure_params.xgraph2))]
+    def about(self):
 
-        figure_params.ygraph1 = norm.pdf(figure_params.xgraph1)
-        figure_params.ygraph2 = signal + noise
-        figure_params.ygraph3 = figure_params.a3 * np.cos(figure_params.b3 * figure_params.xgraph3) + figure_params.a3
-        figure_params.ygraph4 = figure_params.xgraph4
+        """"""
+
+        QtWidgets.QMessageBox.about(self, "About", proginfo)
+
+    def file_quit(self):
+
+        """"""
+
+        self.close()
+
+    def close_event(self):
+
+        """"""
+
+        self.file_quit()
 
     @staticmethod
     def close_win_obj(win_obj):
@@ -416,21 +412,3 @@ class MainApplicationWindow(QtWidgets.QMainWindow):
 
         for i in reversed(range(layout.count())):
             layout.removeItem(layout.takeAt(i))
-
-    def about(self):
-
-        """"""
-
-        QtWidgets.QMessageBox.about(self, "About", proginfo)
-
-    def file_quit(self):
-
-        """"""
-
-        self.close()
-
-    def close_event(self):
-
-        """"""
-
-        self.file_quit()

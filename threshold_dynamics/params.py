@@ -1,3 +1,5 @@
+import random
+from scipy.stats import norm
 import numpy as np
 
 
@@ -33,3 +35,12 @@ class Params:
         self.a3 = a3
         self.b3 = b3
         self.params = [self.a1, self.b1, self.a2, self.b2, self.a3, self.b3]
+
+    def set_figure_params(self):
+        signal = self.a2 * np.cos(self.b2 * self.xgraph2) + self.a2
+        noise = [random.gauss(0, np.std(signal) / self.a3) for i in range(len(self.xgraph2))]
+
+        self.ygraph1 = norm.pdf(self.xgraph1)
+        self.ygraph2 = signal + noise
+        self.ygraph3 = self.a3 * np.cos(self.b3 * self.xgraph3) + self.a3
+        self.ygraph4 = self.xgraph4

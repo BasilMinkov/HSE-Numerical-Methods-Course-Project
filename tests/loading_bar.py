@@ -19,12 +19,12 @@ class Example(QWidget):
         self.pbar = QProgressBar(self)
         self.pbar.setGeometry(30, 40, 200, 25)
 
-        self.btn = QPushButton('Start', self)
-        self.btn.move(40, 80)
-        self.btn.clicked.connect(self.doAction)
-
-        self.timer = QBasicTimer()
-        self.step = 0
+        # self.btn = QPushButton('Start', self)
+        # self.btn.move(40, 80)
+        # self.btn.clicked.connect(self.doAction)
+        #
+        # self.timer = QBasicTimer()
+        # self.step = 0
 
         self.setGeometry(300, 300, 280, 170)
         self.setWindowTitle('QProgressBar')
@@ -37,7 +37,7 @@ class Example(QWidget):
             self.btn.setText('Finished')
             return
 
-        self.step = self.step + 1
+        self.step =+ 1
         self.pbar.setValue(self.step)
 
     def doAction(self):

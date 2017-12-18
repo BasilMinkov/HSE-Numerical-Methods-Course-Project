@@ -49,7 +49,7 @@ figure_params = Params(xgraph1=np.arange(0.0, 1.0, 0.01),
                        xgraph3=np.arange(0.0, 1.0, 0.01),
                        xgraph4=np.arange(0.0, 1.0, 0.01),
                        xgraph5=np.arange(0.0, 1.0, 0.01),
-                       foo=norm.pdf,
+                       foo=norm.pdf, mu=0.5, sigma=0.1, alpha=0.5, beta=0.5,
                        a1=1, b1=1,
                        a2=1, b2=10,
                        a3=5, b3=1)

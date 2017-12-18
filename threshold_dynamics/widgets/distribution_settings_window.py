@@ -1,5 +1,8 @@
 import sys
 from PyQt5 import QtWidgets, QtCore
+from scipy.stats import norm, lognorm, laplace, beta
+
+from threshold_dynamics.setup import figure_params
 
 
 class DistributionSettingWindow(QtWidgets.QMainWindow):
@@ -20,8 +23,14 @@ class DistributionSettingWindow(QtWidgets.QMainWindow):
         self.main_layout = QtWidgets.QVBoxLayout(self.main_widget)
 
         self.lbl = QtWidgets.QLabel("Current Distribution: {}\n"
-                                    "Current Expected Value: {}\n "
-                                    "Current Variance: {}".format(self.distribution, self.mu, self.sigma))
+                                    "Current Expected Value: {}\n"
+                                    "Current Dispersion: {}"
+                                    "Current Alpha: {}\n"
+                                    "Current Beta: {}".format(self.distribution,
+                                                              self.mu,
+                                                              self.sigma,
+                                                              self.alpha,
+                                                              self.beta))
         self.info_layout = QtWidgets.QHBoxLayout()
         self.combo_box_layout = QtWidgets.QHBoxLayout()
         self.params_layout = QtWidgets.QHBoxLayout()
@@ -115,11 +124,40 @@ class DistributionSettingWindow(QtWidgets.QMainWindow):
 
     def apply_changes(self):
 
-        self.lbl.setText("Current Distribution: {}\n"
-                         "Current Expected Value: {}\n "
-                         "Current Dispersion: {}".format(self.distribution, self.mu, self.sigma))
-        self.lbl.adjustSize()
+        if self.mu_line_edit.text() != '':
+            figure_params.mu = float(self.mu_line_edit.text())
+            self.mu = float(self.mu_line_edit.text())
+        if self.sigma_line_edit.text() != '':
+            figure_params.sigma = float(self.sigma_line_edit.text())
+            self.sigma = float(self.sigma_line_edit.text())
+        if self.beta_line_edit.text() != '':
+            figure_params.beta = float(self.beta_line_edit.text())
+            self.beta = float(self.beta_line_edit.text())
+        if self.alpha_line_edit.text() != '':
+            figure_params.alpha = float(self.alpha_line_edit.text())
+            self.alpha = float(self.alpha_line_edit.text())
 
+        if self.distribution == "Normal":
+            figure_params.foo = norm.pdf
+        if self.distribution == "Log-normal":
+            figure_params.foo = lognorm.pdf
+        if self.distribution == "Beta":
+            figure_params.foo = beta.pdf
+        if self.distribution == "Laplace":
+            figure_params.foo = laplace.pdf
+
+        figure_params.set_figure_params()
+
+        self.lbl.setText("Current Distribution: {}\n"
+                         "Current Expected Value: {}\n"
+                         "Current Dispersion: {}\n"
+                         "Current Alpha: {}\n"
+                         "Current Beta: {}".format(self.distribution,
+                                                   self.mu,
+                                                   self.sigma,
+                                                   self.alpha,
+                                                   self.beta))
+        self.lbl.adjustSize()
 
     @staticmethod
     def close_win_obj(win_obj):
