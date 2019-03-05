@@ -1,4 +1,4 @@
-# Numerical Methods Project [:ru:](/info/README_RUS.md)
+# HSE Numerical Methods Course Project, 2017 [:ru:](/info/README_RUS.md)
 
 ## Flowchart
 
