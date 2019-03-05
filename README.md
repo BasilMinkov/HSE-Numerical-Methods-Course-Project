@@ -53,5 +53,5 @@ The integral approximation and interpolation implementation. Inherited from **cl
 1. Wikipedia page: http://en.wikipedia.org/wiki/Trapezoidal_rule
 
 ## Author
-- Basil Minkov, Neuroimaging Methods Group, NRU HSE, Moscow, Russia
+- Basil Minkov
 
